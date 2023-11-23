@@ -1,0 +1,12 @@
+langchain
+openai
+pandas
+numpy
+streamlit
+streamlit-chat 
+sqlalchemy 
+sqlalchemy-bigquery 
+google-cloud-bigquery
+beautifulsoup4
+pdfkit
+langchain-experimental
