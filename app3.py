@@ -59,60 +59,141 @@ prefix_text = st.sidebar.text_area(
 st.sidebar.write(f'You wrote {len(prefix_text)} characters.')
 
 
-# custom_table_info = st.sidebar.text_area(
-#     "Enter table info:",{
-#     "orders":
-#                     f"""CREATE TABLE "orders" (
-#                         order_id INTEGER PRIMARY KEY, 
-#                         order_date DATE, 
-#                         shipping_date DATE, 
-#                         delivery_date DATE, 
-#                         return_date DATE, 
-#                         order_status TEXT, 
-#                         order_qty INTEGER, 
-#                         customer_id INTEGER, 
-#                         product TEXT, 
-#                         price REAL, 
-#                         warehouse_loc TEXT, 
-#                         category TEXT, 
-#                         prod_cost REAL, 
-#                         brand TEXT, 
-#                         customer_city TEXT, 
-#                         customer_country TEXT, 
-#                         traffic_source TEXT
-#                         )
+custom_table_info = {
 
-#     /*
-#     Note: 
-#     1. Revenue is calculated by multiplying 'price' and 'qty' columns.
-#     2. A user or customer is new if 'customer_id' didn't exisit before the given 'order_date'.
-#     3. Date format for 'order_date' , 'shipping_date', 'delivery_date', 'return_date' columns are dd-mm-yy .
-#     4. The orders table is an orders table, representing all the orders placed, along with product information, customer information (customer ID) and the associated revenue with the order (qty of products and price).
-#     5. Order_id column is the unique identifier of every order placed in the orders store.
-#     6. Order_date is the date the order is placed in DD/MM/YY format.
-#     7. Shipping_date is the date an order is shipped from orders facility to the customer in DD/MM/YY format.
-#     8. Delivery_date is the date an order reaches the customer in DD/MM/YY format.
-#     9. Return_date is non-null only when an order has been returned, do note, all returns should not be considered revenue earned. The return_date is the date customer has returned their product in DD/MM/YY format.
-#     10. Order_status is a string field that can only have the values: Complete (Revenue to be considered), Shipped (Revenue to be considered), Processing (Revenue not to be considered), Cancelled (Revenue not to be considered), Returned (Revenue not to be considered).
-#     11. Order_qty is the quantity of the product ordered in that order in integer format.
-#     12. Customer_id is the unique identifier of a customer of orders in numeric format.
-#     13. Product is string format of the exact product being ordered.
-#     14. Price is numeric format of the USD price for one unit of the product.
-#     15. Warehouse_loc is String format of the warehouse location from which the product is being shipped.
-#     16. Category is string format of the category within which the product in the specified row falls.
-#     17. Prod_cost is the cost of one unit of the product in USD, useful to calculate gross profit from an order.
-#     18. Brand is the string format brand from which that product belongs to, eg. Coke is the brand of cold drinks that a large number of people drink.
-#     19. Customer_city is the string format city from which the customer belongs.
-#     20. Customer_country is the string format country from which the customer belongs.
-#     21. Traffic_source is the string format of marketing channel from which the order came in.
-#     22. Use `ILIKE %keyword% in your SQL query to perform fuzzy text matching within text  or string datatype columns.
-#     """},height=600)
+   "fact_order_item": f""" CREATE TABLE `fact_order_item` (
+                    order_id STRING,
+                    order_item_id STRING,
+                    marketplace STRING,
+                    order_date TIMESTAMP,
+                    quantity NUMERIC,
+                    price NUMERIC	,
+                    discounts NUMERIC,
+                    shipping_pincode STRING,
+                    state STRING,
+                    city STRING,
+                    sku_name STRING,
+                    asin STRING,
+                    amazon_parent_sku STRING,
+                    fabric STRING,
+                    product_name STRING,
+                    collection STRING,
+                    master_collection STRING,
+                    product_type STRING,
+                    weigh_slab INTEGER,
+                    awb STRING,
+                    shipping_status STRING,
+                    simplified_status STRING,
+                    fulfillment_channel STRING,
+                    inner_consumption FLOAT	,
+                    outer_consumption FLOAT	,
+                    consumption_cost FLOAT	,
+                    cost NUMERIC
+                    )
+
+    /*
+    Note for the Table :-
+    1.order_id : A unique identifier for each order.
+    2.order_item_id : A unique identifier for each item within an order.
+    3.marketplace: The platform or marketplace where the order was placed. Example :- Amazon, Shopify, Myntra, Flipkart
+    4.order_date: The date and time when the order was placed in UTC format.
+    5.quantity : The number of units of the item ordered.
+    6.price : The price of a single unit of the item. The price in INR currency
+    7.discounts : Any discounts applied to the order at an item level
+    8.shipping_pincode : The postal code to which the order is shipped.
+    9.state : The state where the order is shipped.
+    10.city : The city where the order is shipped.
+    11.sku_name : The stock keeping unit name, a unique identifier for each product.
+    12.asin : Amazon Standard Identification Number, unique for products on Amazon.
+    13.amazon_parent_sku : The parent SKU for products that have variations on Amazon.
+    14.fabric : The type of fabric (if applicable) of the product.
+    15.product_name : The name of the product. If a user asks for product use the sku_name column.
+    16.collection : The collection to which the product belongs.
+    17.master_collection : A broader collection category that the product belongs to.
+    18.product_type : The type or category of the product.
+    19.weigh_slab : A range of weight for shipping purposes.
+    20.awb : Air Waybill number, used for tracking shipments.
+    21.shipping_status : The current status of the shipment.
+    22.simplified_status: A simplified or general status of the order. RTO( Return to Origin ), Returned, Return to Origin orders should not be considered in revenue calculations. For details or customer comments on the status look at fact_shipping table.
+    23.fulfillment_channel : The channel through which an Amazon order was fullfilled.
+    24.inner_consumption : Internal consumption of fabric .
+    25.outer_consumption : External consumption of fabric .
+    26.consumption_cost : Cost associated with consumption including inner or outer).
+    27.cost: The total cost of procuring the product.
+    28.Total revenue for a product is price into quantity minus the discount.
+    29.Fact Order item has all details about orders.
+    */""",
+
+
+    "fact_shipping": f""" CREATE TABLE `fact_shipping` (
+                  order_id STRING,
+                  marketplace STRING,
+                  placed_date DATETIME,
+                  shipping_status STRING,
+                  simplified_status STRING,
+                  aging INTEGER,
+                  awb STRING,
+                  payment_method STRING,
+                  pin_code STRING,
+                  courier_partner STRING,
+                  state STRING,
+                  city STRING,
+                  item_sku_code STRING,
+                  amazon_parent_sku STRING,
+                  items_quantity NUMERIC,
+                  weight NUMERIC,
+                  delivery_date TIMESTAMP,
+                  return_reference_number STRING,
+                  return_status STRING,
+                  return_request_date DATE,
+                  refund_amount NUMERIC,
+                  return_quantity NUMERIC,
+                  return_reason STRING,
+                  simplified_return_reason STRING,
+                  return_delivery_date DATE,
+                  collection STRING,
+                  master_collection STRING,
+                  weigh_slab INTEGER
+                 )
+    /*
+    Note for the Table :-
+    1.order_id: A unique identifier for each order.
+    2.marketplace : The name of the marketplace where the order was placed.  Example :- Amazon, Shopify, Myntra, Flipkart
+    3.placed_date : The date and time when the order was placed.
+    4.shipping_status : The current status of the shipping process (e.g., pending, shipped, delivered).
+    5.simplified_status : A simplified or general status of the order. RTO( Return to Origin ) orders should not be considered in revenue calculations
+    6.aging : The number of days since the order was placed or a specific event in the shipping process occurred.
+    7.awb: Air Waybill number, which is used to track and identify shipments.
+    8.payment_method : The method used for payment (e.g., credit card, PayPal, cash on delivery).
+    9.pin_code : The postal code for the delivery address.
+    10.courier_partner : The name of the courier or shipping partner handling the delivery.
+    11.state: The state of the delivery address.
+    12.city : The city of the delivery address.
+    13.item_sku_code : The stock keeping unit code for the item, unique to each product.
+    14.amazon_parent_sku : The parent SKU for products that have variations, specifically on Amazon.
+    15.items_quantity : The quantity of items in the order.
+    16.weight : The total weight of the order or shipment.
+    17.delivery_date : The date and time when the order was delivered.
+    18.return_reference_number : A unique identifier for a return, if applicable.
+    19.return_status : The status of the return process (e.g., requested, processing, completed).
+    20.return_request_date : The date when a return was requested.
+    21.refund_amount : The amount to be refunded for the return.
+    22.return_quantity : The quantity of items being returned.
+    23.return_reason : The reason provided for the return or RTO ( Return to Origin ).
+    24.simplified_return_reason : A simplified or general reason for the return.
+    25.return_delivery_date : The date when the returned item was delivered back.
+    26.collection : The collection or line to which the product belongs.
+    27.master_collection : A broader collection category encompassing various individual collections.
+    28.weigh_slab : A category or range of weight for shipping or return purposes.
+    29. This table contains all information about shipping details , return date and return reasons.
+    */""",
+    }
 
     
 # Initialize the LLMPredictor and other necessary components
 def initialize_llm_predictor():
 
-    db = SQLDatabase.from_uri(sqlalchemy_url)
+    db = SQLDatabase.from_uri(sqlalchemy_url, custom_table_info=custom_table_info)
     llm = ChatOpenAI(model_name='gpt-3.5-turbo',temperature=0)
     #llm = OpenAI(temperature=0, model="gpt-3.5-turbo")
     #llm= OpenAI(model_name='gpt-3.5-turbo',temperature=0)
